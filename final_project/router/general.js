@@ -85,19 +85,20 @@ public_users.get('/title/:title', function (req, res) {
 
     const title = req.params.title;
   
-    // Get all keys of the books object
-    const bookKeys = Object.keys(books);
+    // Convert books object into an array
+    const bookArray = Object.values(books);
   
-    let filteredBooks = [];
+    // Filter books by title
+    const filteredBooks = bookArray.filter(book => book.title === title);
   
-    // Iterate through the books
-    bookKeys.forEach((key) => {
-      if (books[key].title === title) {
-        filteredBooks.push(books[key]);
-      }
-    });
-  
-    return res.status(200).json(filteredBooks);
+    // Check if any book was found
+    if (filteredBooks.length > 0) {
+      return res.status(200).json(filteredBooks);
+    } else {
+      return res.status(404).json({
+        message: "No book found with the given title"
+      });
+    }
   
   });
 
