@@ -1,5 +1,5 @@
 const express = require('express');
-let books = require("./booksdb.js");
+const { books } = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 
@@ -36,16 +36,13 @@ public_users.get('/', function (req, res) {
 
 // Get book details based on ISBN
 // general.js
-
 public_users.get('/isbn/:isbn', function (req, res) {
 
-    // Get ISBN from request parameter
     const isbn = req.params.isbn;
 
-    // Access the books database
-    const books = require("./booksdb.js");
+    // ✅ FIXED IMPORT
+    const { books } = require("./booksdb.js");
 
-    // Return book details
     const book = books[isbn];
 
     if (book) {
@@ -68,14 +65,21 @@ public_users.get('/author/:author', function (req, res) {
   
     let filteredBooks = [];
   
-    // Iterate through the books
+    // Iterate through books using keys
     bookKeys.forEach((key) => {
       if (books[key].author === author) {
         filteredBooks.push(books[key]);
       }
     });
   
-    return res.status(200).json(filteredBooks);
+    // Return results
+    if (filteredBooks.length > 0) {
+      return res.status(200).json(filteredBooks);
+    } else {
+      return res.status(404).json({
+        message: "No books found for the given author"
+      });
+    }
   
   });
 
@@ -85,18 +89,24 @@ public_users.get('/title/:title', function (req, res) {
 
     const title = req.params.title;
   
-    // Convert books object into an array
-    const bookArray = Object.values(books);
+    // Get all ISBN keys
+    const bookKeys = Object.keys(books);
   
-    // Filter books by title
-    const filteredBooks = bookArray.filter(book => book.title === title);
+    let filteredBooks = [];
   
-    // Check if any book was found
+    // Iterate through books
+    bookKeys.forEach((key) => {
+      if (books[key].title === title) {
+        filteredBooks.push(books[key]);
+      }
+    });
+  
+    // Return response
     if (filteredBooks.length > 0) {
       return res.status(200).json(filteredBooks);
     } else {
       return res.status(404).json({
-        message: "No book found with the given title"
+        message: "No books found with the given title"
       });
     }
   
@@ -108,13 +118,16 @@ public_users.get('/review/:isbn', function (req, res) {
 
     const isbn = req.params.isbn;
   
-    if (books[isbn]) {
-        const reviews = books[isbn].reviews;
-        return res.status(200).send(JSON.stringify(reviews, null, 4));
+    if (!books[isbn]) {
+      return res.status(404).json({ message: "Book not found" });
     }
   
-    return res.status(404).json({
-        message: "Book not found"
+    const reviews = books[isbn].reviews;
+  
+    return res.status(200).json({
+      isbn,
+      totalReviews: Object.keys(reviews).length,
+      reviews
     });
   
   });
