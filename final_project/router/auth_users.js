@@ -8,10 +8,10 @@ let users = [];
 
 
 // Check if username already exists
-const isValid = (username)=>{ 
-  let user = users.find((user)=> user.username === username);
-  return user ? true : false;
-}
+const isValid = (username) => {
+  let user = users.find(user => user.username === username);
+  return user ? false : true;
+};
 
 
 // Verify username and password match
